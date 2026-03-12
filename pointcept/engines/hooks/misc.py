@@ -247,6 +247,7 @@ class CheckpointLoader(HookBase):
                 f"replace keyword with: {self.replacement}"
             )
             weight = OrderedDict()
+            model_state = self.trainer.model.state_dict()
             for key, value in checkpoint["state_dict"].items():
                 if not key.startswith("module."):
                     key = "module." + key  # xxx.xxx -> module.xxx.xxx
@@ -255,6 +256,13 @@ class CheckpointLoader(HookBase):
                     key = key.replace(self.keywords, self.replacement, 1)
                 if comm.get_world_size() == 1:
                     key = key[7:]  # module.xxx.xxx -> xxx.xxx
+                # Skip keys with shape mismatch (e.g. pretrain head vs finetune head)
+                if key in model_state and value.shape != model_state[key].shape:
+                    self.trainer.logger.info(
+                        f"Skipping {key}: shape mismatch "
+                        f"(ckpt {value.shape} vs model {model_state[key].shape})"
+                    )
+                    continue
                 weight[key] = value
             load_state_info = self.trainer.model.load_state_dict(
                 weight, strict=self.strict

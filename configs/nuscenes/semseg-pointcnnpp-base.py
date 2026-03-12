@@ -89,7 +89,7 @@ scheduler = dict(
     final_div_factor=100.0,
 )
 dataset_type = "NuScenesDataset"
-data_root = "/path/to/nuscenes"
+data_root = "/path/to/nuscenes_processed"
 ignore_index = -1
 names = [
     "barrier",

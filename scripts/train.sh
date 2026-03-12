@@ -11,7 +11,8 @@ RESUME=false
 NUM_GPU=None
 NUM_MACHINE=1
 DIST_URL="auto"
-while getopts "p:d:c:n:w:g:m:r:" opt; do
+USE_NOHUP=true
+while getopts "p:d:c:n:w:g:m:r:f" opt; do
   case $opt in
     p)
       PYTHON=$OPTARG
@@ -36,6 +37,9 @@ while getopts "p:d:c:n:w:g:m:r:" opt; do
       ;;
     m)
       NUM_MACHINE=$OPTARG
+      ;;
+    f)
+      USE_NOHUP=false
       ;;
     \?)
       echo "Invalid option: -$OPTARG"
@@ -75,24 +79,51 @@ else
   cp -r scripts tools pointcept "$CODE_DIR"
 fi
 echo "Loading config in:" $CONFIG_DIR
-export PYTHONPATH=./$CODE_DIR
+# Add pointelligence root so internals/layers/sparse_engines are importable from copied code
+POINTELLIGENCE_ROOT=$(cd "$ROOT_DIR/../.." && pwd)
+export PYTHONPATH=./$CODE_DIR:$POINTELLIGENCE_ROOT
 echo "Running code in: $CODE_DIR"
-echo "Run task"
-if [ "${WEIGHT}" = "None" ]
-then
-    $PYTHON "$CODE_DIR"/tools/$TRAIN_CODE \
-    --config-file "$CONFIG_DIR" \
-    --num-gpus "$NUM_GPU" \
-    --num-machines "$NUM_MACHINE" \
-    --machine-rank ${SLURM_NODEID:-0} \
-    --dist-url ${DIST_URL} \
-    --options save_path="$EXP_DIR"
+LOG_FILE="${EXP_DIR}/train_$(date +%Y-%m-%d_%H-%M-%S).log"
+if [ "${USE_NOHUP}" = true ]; then
+  echo "Run task (nohup, log: $LOG_FILE)"
+  if [ "${WEIGHT}" = "None" ]; then
+    nohup $PYTHON "$CODE_DIR"/tools/$TRAIN_CODE \
+      --config-file "$CONFIG_DIR" \
+      --num-gpus "$NUM_GPU" \
+      --num-machines "$NUM_MACHINE" \
+      --machine-rank ${SLURM_NODEID:-0} \
+      --dist-url ${DIST_URL} \
+      --options save_path="$EXP_DIR" \
+      > "$LOG_FILE" 2>&1 &
+  else
+    nohup $PYTHON "$CODE_DIR"/tools/$TRAIN_CODE \
+      --config-file "$CONFIG_DIR" \
+      --num-gpus "$NUM_GPU" \
+      --num-machines "$NUM_MACHINE" \
+      --machine-rank ${SLURM_NODEID:-0} \
+      --dist-url ${DIST_URL} \
+      --options save_path="$EXP_DIR" resume="$RESUME" weight="$WEIGHT" \
+      > "$LOG_FILE" 2>&1 &
+  fi
+  echo "PID: $!"
+  echo "Log: $LOG_FILE"
 else
+  echo "Run task (foreground)"
+  if [ "${WEIGHT}" = "None" ]; then
     $PYTHON "$CODE_DIR"/tools/$TRAIN_CODE \
-    --config-file "$CONFIG_DIR" \
-    --num-gpus "$NUM_GPU" \
-    --num-machines "$NUM_MACHINE" \
-    --machine-rank ${SLURM_NODEID:-0} \
-    --dist-url ${DIST_URL} \
-    --options save_path="$EXP_DIR" resume="$RESUME" weight="$WEIGHT"
+      --config-file "$CONFIG_DIR" \
+      --num-gpus "$NUM_GPU" \
+      --num-machines "$NUM_MACHINE" \
+      --machine-rank ${SLURM_NODEID:-0} \
+      --dist-url ${DIST_URL} \
+      --options save_path="$EXP_DIR"
+  else
+    $PYTHON "$CODE_DIR"/tools/$TRAIN_CODE \
+      --config-file "$CONFIG_DIR" \
+      --num-gpus "$NUM_GPU" \
+      --num-machines "$NUM_MACHINE" \
+      --machine-rank ${SLURM_NODEID:-0} \
+      --dist-url ${DIST_URL} \
+      --options save_path="$EXP_DIR" resume="$RESUME" weight="$WEIGHT"
+  fi
 fi

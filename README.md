@@ -81,6 +81,20 @@ Pretraining and fine-tuning both use **preprocessed** NuScenes under a single `d
 
 ---
 
+## Pretrained Weights
+
+Pre-trained checkpoints for NuScenes (PointCNN++ backbone) are available:
+
+| Stage | File | URL |
+|-------|------|-----|
+| **MSC pretraining** | `model_last.pth` | [Google Drive](https://drive.google.com/file/d/1x8cyOZAKerBR0aNbUtHufwlVDDFBp8zM/view?usp=drive_link) |
+| **Fine-tuned (semantic segmentation)** | `model_best.pth` | [Google Drive](https://drive.google.com/file/d/1lwENP_nWhP8YaK7I6UzTYa_3QQDiPYJo/view?usp=drive_link) |
+
+- **MSC checkpoint**: Use with `-w` when running fine-tuning (e.g. `-w /path/to/model_last.pth`).
+- **Fine-tuned checkpoint**: Use with `-w model_best` when running `scripts/test.sh` for evaluation.
+
+---
+
 ## PointCNN++ pretraining (MSC)
 
 Uses **Masked Scene Contrast** for self-supervised pretraining on NuScenes with a PointCNN++ backbone (ResUNetPointCNNpp).
@@ -90,8 +104,8 @@ Uses **Masked Scene Contrast** for self-supervised pretraining on NuScenes with 
 You can run pretraining with the generic script `scripts/train.sh` and the same config/experiment. Ensure the config path exists.
 
 ```bash
-./scripts/train.sh \
-  -c pretrain-msc-pointcnnpp-base \
+bash ./scripts/train.sh \
+  -c msc-pointcnnpp-base \
   -n pointcnnpp_nuscenes_pretrain \
   -g 8
 ```
@@ -117,7 +131,7 @@ Fine-tune the pretrained PointCNN++ model for NuScenes semantic segmentation usi
 Pass the pretrained checkpoint via `-w`:
 
 ```bash
-./scripts/train.sh -c semseg-pointcnnpp-base \
+bash ./scripts/train.sh -c semseg-pointcnnpp-base \
   -n semseg_from_msc_pointcnnpp_pretrain -w /path/to/exp/nuscenes_pretrain/<EXP_NAME>/model/model_last.pth -g 8
 ```
 

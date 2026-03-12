@@ -1,11 +1,12 @@
 import sys
 import torch.nn as nn
-import spconv.pytorch as spconv
 
 try:
     import ocnn
+    import spconv.pytorch as spconv
 except ImportError:
     ocnn = None
+    spconv = None
 
 from collections import OrderedDict
 from pointcept.models.utils.structure import Point

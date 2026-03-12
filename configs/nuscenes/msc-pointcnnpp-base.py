@@ -1,5 +1,5 @@
 _base_ = ["../_base_/default_runtime.py"]
-data_root = "/data0/lihan/aliyunpan-v0.3.7-linux-amd64/Downloads/nuscenes_processed"
+data_root = "/path/to/nuscenes_processed"
 
 batch_size = 24
 num_worker = 4

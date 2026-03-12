@@ -14,8 +14,9 @@ import numpy as np
 
 from timm.layers import trunc_normal_
 
-# import sys
-# sys.path.append("/path/to/project/root/dir")
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent.parent.parent))
 
 from internals.neighbors import radius_search
 from internals.indexing import cumsum_exclusive, repeat_interleave_indices

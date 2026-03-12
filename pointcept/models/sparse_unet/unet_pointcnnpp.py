@@ -10,8 +10,9 @@ import torch.nn as nn
 from functools import partial
 from typing import Tuple, Optional, List
 
-# import sys
-# sys.path.append("/path/to/project/root/dir")
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent.parent.parent))
 
 from layers import (
     PointConv3d,

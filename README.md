@@ -30,7 +30,7 @@ pip install -r requirements.txt
 
 PointCNN++ dependencies must be installed separately (used by the PointCNN++ backbone for pretraining and fine-tuning):
 
-### 4. Local operator libraries (optional)
+### 4. Local operator libraries
 
 If you use PointOps / PointGroup operators:
 

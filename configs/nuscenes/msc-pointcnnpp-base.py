@@ -49,8 +49,8 @@ model = dict(
     hard_neg_weight=1.4,
 )
 
-epoch = 60
-eval_epoch = 60
+epoch = 5
+eval_epoch = 5
 optimizer = dict(type="SGD", lr=0.08, momentum=0.8, weight_decay=0.0001, nesterov=True)
 scheduler = dict(
     type="OneCycleLR",
